@@ -1,0 +1,23 @@
+# B3 Stock Analyzer - Dependências
+# Python 3.9+
+
+# Framework Principal
+streamlit==1.32.0
+
+# Dados Financeiros
+yfinance==0.2.37
+pandas==2.1.4
+numpy==1.26.3
+
+# Análise Técnica
+pandas-ta==0.3.14b
+
+# Visualização
+plotly==5.19.0
+
+# Utilitários
+requests==2.31.0
+python-dateutil==2.8.2
+
+# Opcional - Melhoria de Performance
+# streamlit-cache==0.1.0
