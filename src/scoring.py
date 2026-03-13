@@ -1,5 +1,6 @@
 """
 Módulo de cálculo de score de saúde para empresas.
+Compatível com Python 3.14+
 """
 
 from typing import Dict
@@ -12,43 +13,21 @@ from .fundamental_analysis import (
 
 
 def calculate_health_score(fundamentals: Dict) -> float:
-    """
-    Calcula score de saúde da empresa (0-100).
-    
-    Critérios:
-    - Rentabilidade: 30 pontos
-    - Endividamento: 25 pontos
-    - Valuation: 25 pontos
-    - Dividendos: 20 pontos
-    
-    Args:
-        fundamentals: Dict com indicadores fundamentalistas
-        
-    Returns:
-        Score entre 0 e 100
-    """
+    """Calcula score de saúde da empresa (0-100)."""
     if not fundamentals:
         return 0.0
     
     score = 0.0
-    score += evaluate_profitability(fundamentals)  # 0-30
-    score += evaluate_debt(fundamentals)           # 0-25
-    score += evaluate_valuation(fundamentals)      # 0-25
-    score += evaluate_dividends(fundamentals)      # 0-20
+    score += evaluate_profitability(fundamentals)
+    score += evaluate_debt(fundamentals)
+    score += evaluate_valuation(fundamentals)
+    score += evaluate_dividends(fundamentals)
     
     return min(100.0, max(0.0, score))
 
 
 def get_score_category(score: float) -> str:
-    """
-    Classifica o score em categorias descritivas.
-    
-    Args:
-        score: Score entre 0 e 100
-        
-    Returns:
-        String com categoria
-    """
+    """Classifica o score em categorias descritivas."""
     if score >= 80:
         return "Excelente"
     elif score >= 60:
@@ -59,15 +38,7 @@ def get_score_category(score: float) -> str:
 
 
 def get_score_emoji(score: float) -> str:
-    """
-    Retorna emoji correspondente ao score.
-    
-    Args:
-        score: Score entre 0 e 100
-        
-    Returns:
-        Emoji string
-    """
+    """Retorna emoji correspondente ao score."""
     if score >= 80:
         return "⭐"
     elif score >= 60:
