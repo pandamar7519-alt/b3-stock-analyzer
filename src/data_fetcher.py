@@ -1,5 +1,6 @@
 """
 Módulo para busca e processamento de dados financeiros da B3.
+Compatível com Python 3.14+
 """
 
 import pandas as pd
@@ -26,7 +27,7 @@ def fetch_stock_data(ticker: str, period: str = "2y") -> Optional[pd.DataFrame]:
         stock = yf.Ticker(ticker_yf)
         data = stock.history(period=period)
         
-        if data.empty:
+        if data is None or data.empty:
             return None
             
         return data
