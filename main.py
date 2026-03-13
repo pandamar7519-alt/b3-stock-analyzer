@@ -1,8 +1,7 @@
-
 """
 B3 Stock Analyzer - Aplicação Profissional de Análise de Ações
 ================================================================
-Versão: 1.2.0 (Corrigido para Python 3.14 + Streamlit Cloud)
+Versão: 2.0.0 (Compatível com Python 3.14 - SEM pandas-ta)
 Licença: MIT
 
 Esta aplicação fornece análise fundamentalista e técnica para ações da B3.
@@ -12,7 +11,7 @@ NÃO constitui recomendação de investimento. Consulte um assessor credenciado.
 import streamlit as st
 import pandas as pd
 import numpy as np
-from typing import Dict, List, Optional
+from typing import Dict, List
 import warnings
 
 # Imports locais
@@ -27,7 +26,6 @@ from src.visualizations import (
     get_signal_colors
 )
 
-# Suprimir warnings
 warnings.filterwarnings("ignore")
 
 # ============================================================================
@@ -48,11 +46,9 @@ st.set_page_config(
 def main():
     """Função principal da aplicação."""
     
-    # Header
     st.title("📊 B3 Stock Analyzer")
     st.caption("Análise Profissional de Ações para Investidores de Longo Prazo")
     
-    # Disclaimer obrigatório (Compliance CVM)
     render_disclaimer()
     
     # ========================================================================
@@ -62,7 +58,6 @@ def main():
     with st.sidebar:
         st.header("⚙️ Configurações")
         
-        # Input de Tickers
         st.subheader("📝 Tickers para Análise")
         st.info("Insira até 10 tickers separados por vírgula (ex: PETR4, VALE3)")
         
@@ -72,7 +67,6 @@ def main():
             height=100
         )
         
-        # Processa input
         tickers = [t.strip().upper() for t in tickers_input.split(',') if t.strip()]
         tickers = tickers[:10]
         
@@ -83,7 +77,6 @@ def main():
         
         st.divider()
         
-        # Parâmetros
         st.subheader("🔧 Parâmetros")
         period = st.selectbox(
             "Período de Dados",
@@ -93,14 +86,13 @@ def main():
         
         st.divider()
         
-        # Projeção
         st.subheader("💰 Projeção de Renda")
         initial_inv = st.number_input("Investimento Inicial (R$)", min_value=0.0, value=10000.0, step=1000.0)
         monthly_contrib = st.number_input("Aporte Mensal (R$)", min_value=0.0, value=500.0, step=100.0)
         years_proj = st.slider("Período (anos)", min_value=1, max_value=30, value=10)
         
         st.divider()
-        st.caption("**B3 Stock Analyzer** v1.2.0\n\nPython + Streamlit")
+        st.caption("**B3 Stock Analyzer** v2.0.0\n\nPython 3.14 Compatível")
         st.warning("⚠️ Ferramenta educacional. Não é recomendação de investimento.")
     
     # ========================================================================
@@ -122,7 +114,6 @@ def main():
         
         for ticker in tickers_list:
             try:
-                # Busca dados
                 data = fetch_stock_data(ticker, period)
                 if data is None or data.empty:
                     continue
@@ -202,7 +193,6 @@ def main():
         tech = result['technicals']
         data = result['data']
         
-        # Métricas principais (usando st.metric - NATIVO)
         col1, col2, col3, col4 = st.columns(4)
         
         with col1:
@@ -237,7 +227,6 @@ def main():
                 delta=f"Payout: {fund.get('payout', 0):.1f}%" if isinstance(fund.get('payout'), (int, float)) else ""
             )
         
-        # Gráficos
         col_c1, col_c2 = st.columns([2, 1])
         
         with col_c1:
@@ -249,7 +238,6 @@ def main():
                 fig_rsi = create_rsi_chart(data)
                 st.plotly_chart(fig_rsi, use_container_width=True)
         
-        # Detalhes Fundamentalistas
         st.subheader("📊 Indicadores Fundamentalistas")
         
         col_f1, col_f2, col_f3 = st.columns(3)
@@ -276,7 +264,6 @@ def main():
             st.write(f"• Liq. Corrente: {fund.get('liquidez_corrente', 'N/A')}")
             st.write(f"• Setor: {fund.get('setor', 'N/A')}")
         
-        # Detalhes Técnicos
         st.subheader("📈 Indicadores Técnicos")
         
         col_t1, col_t2, col_t3 = st.columns(3)
@@ -305,7 +292,6 @@ def main():
     st.divider()
     st.header("💰 Projeção de Renda Passiva")
     
-    # DY médio dos ativos
     dy_values = [
         a['fundamentals'].get('dividend_yield')
         for a in analyzers.values()
@@ -346,11 +332,11 @@ def main():
     col_f1, col_f2, col_f3 = st.columns(3)
     
     with col_f1:
-        st.caption("**B3 Stock Analyzer** v1.2.0\n\nPython + Streamlit")
+        st.caption("**B3 Stock Analyzer** v2.0.0\n\nPython 3.14 Compatível")
     with col_f2:
         st.caption("**Fontes**\n\nyfinance (Yahoo Finance)\n\nDelay: ~15min")
     with col_f3:
-        st.caption("**Licença**\n\nMIT License\n\nGitHub: /b3-stock-analyzer")
+        st.caption("**Licença**\n\nMIT License")
     
     st.caption("⚠️ Ferramenta educacional. Não constitui recomendação de investimento. Consulte assessor CVM.")
 
