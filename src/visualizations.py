@@ -1,5 +1,6 @@
 """
 Módulo de visualizações e componentes de UI.
+Compatível com Python 3.14+
 """
 
 import plotly.graph_objects as go
@@ -8,23 +9,10 @@ import pandas as pd
 from typing import Tuple
 
 
-def create_candlestick_chart(
-    data: pd.DataFrame,
-    ticker: str
-) -> go.Figure:
-    """
-    Cria gráfico de candlestick interativo com Plotly.
-    
-    Args:
-        data: DataFrame com dados OHLCV
-        ticker: Código da ação
-        
-    Returns:
-        Figura Plotly
-    """
+def create_candlestick_chart(data: pd.DataFrame, ticker: str) -> go.Figure:
+    """Cria gráfico de candlestick interativo com Plotly."""
     fig = go.Figure()
     
-    # Candlestick
     fig.add_trace(go.Candlestick(
         x=data.index,
         open=data['Open'],
@@ -36,7 +24,6 @@ def create_candlestick_chart(
         decreasing_line_color='#ff4444'
     ))
     
-    # Médias Móveis
     for col, color, name in [
         ('MM20', '#00d4ff', 'MM20'),
         ('MM50', '#ffcc00', 'MM50'),
@@ -65,15 +52,7 @@ def create_candlestick_chart(
 
 
 def create_rsi_chart(data: pd.DataFrame) -> go.Figure:
-    """
-    Cria gráfico do IFR (RSI).
-    
-    Args:
-        data: DataFrame com coluna RSI
-        
-    Returns:
-        Figura Plotly
-    """
+    """Cria gráfico do IFR (RSI)."""
     if 'RSI' not in data.columns:
         return go.Figure()
     
@@ -86,7 +65,6 @@ def create_rsi_chart(data: pd.DataFrame) -> go.Figure:
         name='RSI'
     ))
     
-    # Linhas de referência
     fig.add_hline(y=70, line_dash="dash", line_color="#ff4444", annotation_text="Sobrecompra")
     fig.add_hline(y=30, line_dash="dash", line_color="#00ff88", annotation_text="Sobrevenda")
     
@@ -109,36 +87,21 @@ def create_dividend_projection(
     dividend_yield: float,
     years: int
 ) -> pd.DataFrame:
-    """
-    Calcula projeção de renda passiva com reinvestimento.
-    
-    Args:
-        initial_investment: Valor inicial investido
-        monthly_contribution: Aporte mensal
-        annual_return: Retorno anual esperado (%)
-        dividend_yield: Dividend Yield (%)
-        years: Período em anos
-        
-    Returns:
-        DataFrame com projeção ano a ano
-    """
+    """Calcula projeção de renda passiva com reinvestimento."""
     data = []
     balance = initial_investment
     total_invested = initial_investment
     total_dividends = 0.0
     
     for year in range(1, years + 1):
-        # Dividendos do ano
         dividends = balance * (dividend_yield / 100)
         total_dividends += dividends
         balance += dividends
         
-        # Aportes mensais
         for _ in range(12):
             balance += monthly_contribution
             total_invested += monthly_contribution
         
-        # Retorno anual
         balance *= (1 + annual_return / 100)
         
         data.append({
@@ -153,15 +116,7 @@ def create_dividend_projection(
 
 
 def create_projection_chart(projection_df: pd.DataFrame) -> go.Figure:
-    """
-    Cria gráfico de projeção de patrimônio.
-    
-    Args:
-        projection_df: DataFrame com dados de projeção
-        
-    Returns:
-        Figura Plotly
-    """
+    """Cria gráfico de projeção de patrimônio."""
     fig = px.line(
         projection_df,
         x='Ano',
@@ -175,15 +130,7 @@ def create_projection_chart(projection_df: pd.DataFrame) -> go.Figure:
 
 
 def get_signal_colors(signal: str) -> Tuple[str, str]:
-    """
-    Retorna emoji e cor para sinal técnico.
-    
-    Args:
-        signal: String com sinal ("Compra", "Venda", "Neutro")
-        
-    Returns:
-        Tuple com (emoji, cor_hex)
-    """
+    """Retorna emoji e cor para sinal técnico."""
     if "Compra" in signal:
         return "🟢", "#00ff88"
     elif "Venda" in signal:
