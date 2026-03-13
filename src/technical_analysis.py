@@ -1,23 +1,90 @@
 """
 Módulo de análise técnica para ações da B3.
+IMPLEMENTAÇÃO MANUAL - Compatível com Python 3.14+
+(Sem dependência do pandas-ta/numba)
 """
 
 import pandas as pd
+import numpy as np
 from typing import Dict, Optional
 
-# pandas-ta com fallback
-try:
-    import pandas_ta as ta
-    HAS_PANDAS_TA = True
-except ImportError:
-    HAS_PANDAS_TA = False
 
-
-def calculate_technical_indicators(
-    data: pd.DataFrame
-) -> Dict:
+def calculate_sma(series: pd.Series, length: int) -> pd.Series:
     """
-    Calcula indicadores técnicos para uma série de preços.
+    Calcula Média Móvel Simples (SMA).
+    
+    Args:
+        series: Série de preços
+        length: Período da média
+        
+    Returns:
+        Série com SMA calculada
+    """
+    return series.rolling(window=length).mean()
+
+
+def calculate_rsi(series: pd.Series, length: int = 14) -> pd.Series:
+    """
+    Calcula Índice de Força Relativa (RSI/IFR).
+    Implementação manual compatível com Python 3.14.
+    
+    Args:
+        series: Série de preços de fechamento
+        length: Período do RSI (padrão: 14)
+        
+    Returns:
+        Série com RSI calculado (0-100)
+    """
+    delta = series.diff()
+    gain = delta.where(delta > 0, 0.0)
+    loss = -delta.where(delta < 0, 0.0)
+    
+    avg_gain = gain.rolling(window=length).mean()
+    avg_loss = loss.rolling(window=length).mean()
+    
+    rs = avg_gain / avg_loss
+    rsi = 100 - (100 / (1 + rs))
+    
+    return rsi
+
+
+def calculate_macd(
+    series: pd.Series,
+    fast: int = 12,
+    slow: int = 26,
+    signal: int = 9
+) -> Dict[str, pd.Series]:
+    """
+    Calcula MACD (Moving Average Convergence Divergence).
+    Implementação manual compatível com Python 3.14.
+    
+    Args:
+        series: Série de preços de fechamento
+        fast: Período da EMA rápida (padrão: 12)
+        slow: Período da EMA lenta (padrão: 26)
+        signal: Período da linha de sinal (padrão: 9)
+        
+    Returns:
+        Dict com MACD, Signal e Histogram
+    """
+    ema_fast = series.ewm(span=fast, adjust=False).mean()
+    ema_slow = series.ewm(span=slow, adjust=False).mean()
+    
+    macd_line = ema_fast - ema_slow
+    signal_line = macd_line.ewm(span=signal, adjust=False).mean()
+    histogram = macd_line - signal_line
+    
+    return {
+        'macd': macd_line,
+        'signal': signal_line,
+        'histogram': histogram
+    }
+
+
+def calculate_technical_indicators(data: pd.DataFrame) -> Dict:
+    """
+    Calcula todos os indicadores técnicos para uma série de preços.
+    Implementação manual - SEM dependência do pandas-ta.
     
     Args:
         data: DataFrame com dados OHLCV
@@ -26,10 +93,6 @@ def calculate_technical_indicators(
         Dict com indicadores calculados
     """
     if data is None or data.empty:
-        return {}
-    
-    # Fallback se pandas-ta não estiver disponível
-    if not HAS_PANDAS_TA:
         return {
             'tendencia_curto': 'Neutro',
             'tendencia_longo': 'Neutro',
@@ -40,27 +103,28 @@ def calculate_technical_indicators(
     
     try:
         # Médias Móveis
-        df['MM20'] = ta.sma(df['Close'], length=20)
-        df['MM50'] = ta.sma(df['Close'], length=50)
-        df['MM200'] = ta.sma(df['Close'], length=200)
+        df['MM20'] = calculate_sma(df['Close'], 20)
+        df['MM50'] = calculate_sma(df['Close'], 50)
+        df['MM200'] = calculate_sma(df['Close'], 200)
         
         # IFR (RSI)
-        df['RSI'] = ta.rsi(df['Close'], length=14)
+        df['RSI'] = calculate_rsi(df['Close'], 14)
         
         # MACD
-        macd_result = ta.macd(df['Close'], fast=12, slow=26, signal=9)
-        if macd_result is not None and not macd_result.empty:
-            df = pd.concat([df, macd_result], axis=1)
+        macd_result = calculate_macd(df['Close'])
+        df['MACD'] = macd_result['macd']
+        df['MACD_Signal'] = macd_result['signal']
+        df['MACD_Hist'] = macd_result['histogram']
         
         latest = df.iloc[-1]
         
         return {
-            'mm20': float(latest['MM20']) if 'MM20' in df.columns and pd.notna(latest.get('MM20')) else None,
-            'mm50': float(latest['MM50']) if 'MM50' in df.columns and pd.notna(latest.get('MM50')) else None,
-            'mm200': float(latest['MM200']) if 'MM200' in df.columns and pd.notna(latest.get('MM200')) else None,
-            'rsi': float(latest['RSI']) if 'RSI' in df.columns and pd.notna(latest.get('RSI')) else None,
-            'macd': float(latest['MACD_12_26_9']) if 'MACD_12_26_9' in df.columns and pd.notna(latest.get('MACD_12_26_9')) else None,
-            'macd_signal': float(latest['MACDs_12_26_9']) if 'MACDs_12_26_9' in df.columns and pd.notna(latest.get('MACDs_12_26_9')) else None,
+            'mm20': float(latest['MM20']) if pd.notna(latest.get('MM20')) else None,
+            'mm50': float(latest['MM50']) if pd.notna(latest.get('MM50')) else None,
+            'mm200': float(latest['MM200']) if pd.notna(latest.get('MM200')) else None,
+            'rsi': float(latest['RSI']) if pd.notna(latest.get('RSI')) else None,
+            'macd': float(latest['MACD']) if pd.notna(latest.get('MACD')) else None,
+            'macd_signal': float(latest['MACD_Signal']) if pd.notna(latest.get('MACD_Signal')) else None,
             'tendencia_curto': _analyze_short_term_trend(df),
             'tendencia_longo': _analyze_long_term_trend(df),
             'sinal_tecnico': _generate_technical_signal(latest),
@@ -123,8 +187,8 @@ def _generate_technical_signal(latest: pd.Series) -> str:
             score -= 1
     
     # MACD Analysis
-    macd = latest.get('MACD_12_26_9')
-    macd_signal = latest.get('MACDs_12_26_9')
+    macd = latest.get('MACD')
+    macd_signal = latest.get('MACD_Signal')
     if macd is not None and macd_signal is not None and not pd.isna(macd) and not pd.isna(macd_signal):
         if macd > macd_signal:
             score += 1
