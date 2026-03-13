@@ -43,7 +43,7 @@ dist/
 build/
 *.egg-info/
 
-# Local data (sensitive)
+# Local data
 *.csv
 *.xlsx
 !requirements.txt
