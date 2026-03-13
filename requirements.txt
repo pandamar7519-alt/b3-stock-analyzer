@@ -1,16 +1,16 @@
 # B3 Stock Analyzer - Dependências
-# Compatível com Python 3.14+ (Streamlit Cloud)
+# COMPATÍVEL COM PYTHON 3.14+ (Streamlit Cloud)
+# Versão: 2.0.0
 
-# Framework
+# Framework Principal
 streamlit>=1.40.0
 
 # Dados Financeiros
 yfinance>=0.2.50
+
+# Data Science (wheels disponíveis para Python 3.14)
 pandas>=2.2.0
 numpy>=2.0.0
-
-# Análise Técnica
-pandas-ta>=0.4.67b0
 
 # Visualização
 plotly>=5.20.0
@@ -18,3 +18,6 @@ plotly>=5.20.0
 # Utilitários
 requests>=2.31.0
 python-dateutil>=2.8.2
+
+# NOTA: pandas-ta REMOVIDO (incompatível com Python 3.14)
+# Indicadores técnicos implementados manualmente em src/technical_analysis.py
